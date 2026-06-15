@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 
 export default async function EditApplicant({
   params,
@@ -17,8 +18,8 @@ export default async function EditApplicant({
 
   if (error || !applicant) {
     return (
-      <main className="p-8">
-        <h1 className="text-2xl font-bold text-red-600">
+      <main style={{ padding: "2.5rem", fontFamily: "Inter, sans-serif" }}>
+        <h1 style={{ color: "#C0392B", fontSize: "1.5rem", fontWeight: 600 }}>
           Applicant not found
         </h1>
       </main>
@@ -51,13 +52,8 @@ export default async function EditApplicant({
       flight: formData.get("flight"),
       deployment_status: formData.get("deployment_status"),
       start_date: formData.get("start_date") || null,
-
-      days_processing:
-        Number(formData.get("days_processing")) || 0,
-
-      progress_percentage:
-        Number(formData.get("progress_percentage")) || 0,
-
+      days_processing: Number(formData.get("days_processing")) || 0,
+      progress_percentage: Number(formData.get("progress_percentage")) || 0,
       remarks: formData.get("remarks"),
     };
 
@@ -70,223 +66,373 @@ export default async function EditApplicant({
     console.log("UPDATED DATA:", data);
     console.log("UPDATE ERROR:", error);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
 
     revalidatePath("/applicants");
     revalidatePath(`/applicants/${id}`);
-
     redirect(`/applicants/${id}`);
   }
 
   return (
-    <main className="p-8">
-      <h1 className="mb-8 text-4xl font-bold text-green-700">
-        Edit Applicant
-      </h1>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
 
-      <form action={updateApplicant} className="space-y-8">
+        .ea-root {
+          font-family: 'Inter', sans-serif;
+          background: #F7F5F0;
+          min-height: 100vh;
+          padding: 2.5rem 2.5rem 5rem;
+          color: #0F1C2E;
+        }
 
-        {/* Basic Information */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-2xl font-bold">
-            Basic Information
-          </h2>
+        /* ── Header ── */
+        .ea-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          margin-bottom: 2.5rem;
+        }
+        .ea-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 2rem;
+          font-weight: 700;
+          color: #0F1C2E;
+          letter-spacing: -0.3px;
+          margin: 0 0 0.2rem;
+          line-height: 1.15;
+        }
+        .ea-gold-rule {
+          width: 2rem;
+          height: 2px;
+          background: #C9A84C;
+          border: none;
+          margin: 0 0 0.35rem;
+        }
+        .ea-subtitle {
+          font-size: 0.8125rem;
+          color: #64748B;
+          margin: 0;
+        }
+        .ea-btn-back {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 0.65rem 1.25rem;
+          border-radius: 3px;
+          text-decoration: none;
+          background: transparent;
+          color: #0F1C2E;
+          border: 1px solid #CBD5E1;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+        .ea-btn-back:hover { background: #F1F5F9; border-color: #94A3B8; }
 
-          <div className="grid gap-4 md:grid-cols-2">
+        /* ── Form spacing ── */
+        .ea-form { display: flex; flex-direction: column; gap: 1.5rem; }
 
-            <Input
-              label="Worker Name"
-              name="worker_name"
-              defaultValue={applicant.worker_name}
-            />
+        /* ── Card ── */
+        .ea-card {
+          background: #ffffff;
+          border-radius: 4px;
+          border: 1px solid #E8E5DF;
+          padding: 1.75rem 2rem;
+        }
+        .ea-card-header {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid #F1EFE9;
+        }
+        .ea-card-icon {
+          width: 32px;
+          height: 32px;
+          background: #F7F5F0;
+          border: 1px solid #E8E5DF;
+          border-radius: 3px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.875rem;
+          color: #C9A84C;
+          flex-shrink: 0;
+        }
+        .ea-card-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.2rem;
+          font-weight: 600;
+          color: #0F1C2E;
+          margin: 0;
+        }
 
-            <SelectInput
-              label="Position"
-              name="position"
-              defaultValue={applicant.position}
-              options={[
-                "HSW",
-                "Caregiver",
-                "Driver",
-                "Cleaner",
-              ]}
-            />
+        /* ── Grids ── */
+        .ea-grid-2 {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.25rem;
+        }
+        .ea-grid-3 {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.25rem;
+        }
+        @media (max-width: 768px) {
+          .ea-grid-2 { grid-template-columns: 1fr; }
+          .ea-grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .ea-grid-3 { grid-template-columns: 1fr; }
+        }
 
-            <Input
-              label="Country"
-              name="country"
-              defaultValue={applicant.country}
-            />
+        /* ── Field ── */
+        .ea-field { display: flex; flex-direction: column; gap: 0.4rem; }
+        .ea-label {
+          font-size: 0.625rem;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #94A3B8;
+        }
+        .ea-input {
+          width: 100%;
+          background: #FAFAF8;
+          border: 1px solid #EEF0EC;
+          border-radius: 3px;
+          padding: 0.7rem 0.9rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
+          color: #0F1C2E;
+          outline: none;
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+          box-sizing: border-box;
+        }
+        .ea-input::placeholder { color: #CBD5E1; }
+        .ea-input:focus {
+          border-color: #C9A84C;
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+          background: #ffffff;
+        }
 
-            <Input
-              label="Employer"
-              name="employer"
-              defaultValue={applicant.employer}
-            />
+        /* chevron arrow for selects */
+        .ea-select {
+          width: 100%;
+          background-color: #FAFAF8;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 0.85rem center;
+          border: 1px solid #EEF0EC;
+          border-radius: 3px;
+          padding: 0.7rem 2.25rem 0.7rem 0.9rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
+          color: #0F1C2E;
+          outline: none;
+          appearance: none;
+          cursor: pointer;
+          transition: border-color 0.18s, box-shadow 0.18s, background-color 0.18s;
+          box-sizing: border-box;
+        }
+        .ea-select:focus {
+          border-color: #C9A84C;
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+          background-color: #ffffff;
+        }
 
-            <Input
-              label="FRA"
-              name="fra"
-              defaultValue={applicant.fra}
-            />
+        /* ── Textarea ── */
+        .ea-textarea {
+          width: 100%;
+          background: #FAFAF8;
+          border: 1px solid #EEF0EC;
+          border-radius: 3px;
+          padding: 0.7rem 0.9rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
+          color: #0F1C2E;
+          outline: none;
+          resize: vertical;
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+          box-sizing: border-box;
+          line-height: 1.6;
+        }
+        .ea-textarea:focus {
+          border-color: #C9A84C;
+          box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+          background: #ffffff;
+        }
 
-            <Input
-              label="Passport Number"
-              name="passport_number"
-              defaultValue={applicant.passport_number}
-            />
+        /* ── Remarks row ── */
+        .ea-remarks { margin-top: 1.25rem; }
 
-            <Input
-              label="Contact Number"
-              name="contact_number"
-              defaultValue={applicant.contact_number}
-            />
+        /* ── Footer ── */
+        .ea-footer {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 0.75rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #F1EFE9;
+          margin-top: 0.5rem;
+        }
+        .ea-btn-cancel {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 0.7rem 1.4rem;
+          border-radius: 3px;
+          text-decoration: none;
+          background: transparent;
+          color: #64748B;
+          border: 1px solid #CBD5E1;
+          transition: all 0.15s;
+        }
+        .ea-btn-cancel:hover { background: #F1F5F9; color: #0F1C2E; }
+        .ea-btn-submit {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.6875rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 0.7rem 1.75rem;
+          border-radius: 3px;
+          background: #0F1C2E;
+          color: #C9A84C;
+          border: 1px solid #0F1C2E;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .ea-btn-submit:hover { background: #C9A84C; color: #0F1C2E; border-color: #C9A84C; }
+      `}</style>
 
-            <Input
-              label="Province"
-              name="province"
-              defaultValue={applicant.province}
-            />
+      <main className="ea-root">
+
+        {/* Header */}
+        <div className="ea-header">
+          <div>
+            <h1 className="ea-title">Edit Applicant</h1>
+            <hr className="ea-gold-rule" />
+            <p className="ea-subtitle">{applicant.worker_name}</p>
           </div>
+          <Link href={`/applicants/${id}`} className="ea-btn-back">
+            ← Back
+          </Link>
         </div>
 
-        {/* Processing Status */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-2xl font-bold">
-            Processing Status
-          </h2>
+        <form action={updateApplicant} className="ea-form">
 
-          <div className="grid gap-4 md:grid-cols-3">
+          {/* Basic Information */}
+          <div className="ea-card">
+            <div className="ea-card-header">
+              <div className="ea-card-icon">✦</div>
+              <h2 className="ea-card-title">Basic Information</h2>
+            </div>
 
-            <StatusSelect
-              label="DMW Registration"
-              name="dmw_registration"
-              defaultValue={applicant.dmw_registration}
-            />
+            <div className="ea-grid-2">
+              <Field label="Worker Name" name="worker_name" defaultValue={applicant.worker_name} />
 
-            <StatusSelect
-              label="Info Sheet"
-              name="info_sheet"
-              defaultValue={applicant.info_sheet}
-            />
+              <div className="ea-field">
+                <label className="ea-label" htmlFor="position">Position</label>
+                <select id="position" name="position" defaultValue={applicant.position || ""} className="ea-select">
+                  <option value="">— Select —</option>
+                  <option value="HSW">HSW</option>
+                  <option value="Caregiver">Caregiver</option>
+                  <option value="Driver">Driver</option>
+                  <option value="Cleaner">Cleaner</option>
+                </select>
+              </div>
 
-            <StatusSelect
-              label="CV"
-              name="cv_status"
-              defaultValue={applicant.cv_status}
-            />
-
-            <StatusSelect
-              label="Medical"
-              name="medical"
-              defaultValue={applicant.medical}
-            />
-
-            <StatusSelect
-              label="PEOS"
-              name="peos"
-              defaultValue={applicant.peos}
-            />
-
-            <StatusSelect
-              label="Biometrics"
-              name="biometrics"
-              defaultValue={applicant.biometrics}
-            />
-
-            <StatusSelect
-              label="Visa"
-              name="visa"
-              defaultValue={applicant.visa}
-            />
-
-            <StatusSelect
-              label="Contract Verified"
-              name="contract_verified"
-              defaultValue={applicant.contract_verified}
-            />
-
-            <StatusSelect
-              label="OEC"
-              name="oec"
-              defaultValue={applicant.oec}
-            />
-          </div>
-        </div>
-
-        {/* Deployment */}
-        <div className="rounded-xl bg-white p-6 shadow">
-          <h2 className="mb-4 text-2xl font-bold">
-            Deployment
-          </h2>
-
-          <div className="grid gap-4 md:grid-cols-2">
-
-            <Input
-              label="Flight"
-              name="flight"
-              defaultValue={applicant.flight}
-            />
-
-            <SelectInput
-              label="Deployment Status"
-              name="deployment_status"
-              defaultValue={applicant.deployment_status}
-              options={[
-                "Processing",
-                "For Deployment",
-                "Deployed",
-              ]}
-            />
-
-            <Input
-              label="Start Date"
-              name="start_date"
-              defaultValue={applicant.start_date}
-            />
-
-            <Input
-              label="Days Processing"
-              name="days_processing"
-              defaultValue={applicant.days_processing}
-            />
-
-            <Input
-              label="Progress %"
-              name="progress_percentage"
-              defaultValue={applicant.progress_percentage}
-            />
-
+              <Field label="Country"         name="country"          defaultValue={applicant.country} />
+              <Field label="Employer"        name="employer"         defaultValue={applicant.employer} />
+              <Field label="FRA"             name="fra"              defaultValue={applicant.fra} />
+              <Field label="Passport Number" name="passport_number"  defaultValue={applicant.passport_number} />
+              <Field label="Contact Number"  name="contact_number"   defaultValue={applicant.contact_number} />
+              <Field label="Province"        name="province"         defaultValue={applicant.province} />
+            </div>
           </div>
 
-          <div className="mt-4">
-            <label className="mb-2 block">
-              Remarks
-            </label>
+          {/* Processing Status */}
+          <div className="ea-card">
+            <div className="ea-card-header">
+              <div className="ea-card-icon">◈</div>
+              <h2 className="ea-card-title">Processing Status</h2>
+            </div>
 
-            <textarea
-              name="remarks"
-              defaultValue={applicant.remarks || ""}
-              rows={5}
-              className="w-full rounded-lg border p-3"
-            />
+            <div className="ea-grid-3">
+              <StatusField label="DMW Registration"  name="dmw_registration"  defaultValue={applicant.dmw_registration} />
+              <StatusField label="Info Sheet"         name="info_sheet"         defaultValue={applicant.info_sheet} />
+              <StatusField label="CV"                 name="cv_status"          defaultValue={applicant.cv_status} />
+              <StatusField label="Medical"            name="medical"            defaultValue={applicant.medical} />
+              <StatusField label="PEOS"               name="peos"               defaultValue={applicant.peos} />
+              <StatusField label="Biometrics"         name="biometrics"         defaultValue={applicant.biometrics} />
+              <StatusField label="Visa"               name="visa"               defaultValue={applicant.visa} />
+              <StatusField label="Contract Verified"  name="contract_verified"  defaultValue={applicant.contract_verified} />
+              <StatusField label="OEC"                name="oec"                defaultValue={applicant.oec} />
+            </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          className="rounded-lg bg-green-600 px-6 py-3 font-medium text-white hover:bg-green-700"
-        >
-          Save Changes
-        </button>
-      </form>
-    </main>
+          {/* Deployment */}
+          <div className="ea-card">
+            <div className="ea-card-header">
+              <div className="ea-card-icon">⟶</div>
+              <h2 className="ea-card-title">Deployment</h2>
+            </div>
+
+            <div className="ea-grid-2">
+              <Field label="Flight" name="flight" defaultValue={applicant.flight} />
+
+              <div className="ea-field">
+                <label className="ea-label" htmlFor="deployment_status">Deployment Status</label>
+                <select id="deployment_status" name="deployment_status" defaultValue={applicant.deployment_status || ""} className="ea-select">
+                  <option value="">— Select —</option>
+                  <option value="Processing">Processing</option>
+                  <option value="For Deployment">For Deployment</option>
+                  <option value="Deployed">Deployed</option>
+                </select>
+              </div>
+
+              <Field label="Start Date"      name="start_date"          defaultValue={applicant.start_date} />
+              <Field label="Days Processing" name="days_processing"     defaultValue={applicant.days_processing} />
+              <Field label="Progress %"      name="progress_percentage" defaultValue={applicant.progress_percentage} />
+            </div>
+
+            <div className="ea-remarks">
+              <div className="ea-field">
+                <label className="ea-label" htmlFor="remarks">Remarks</label>
+                <textarea
+                  id="remarks"
+                  name="remarks"
+                  defaultValue={applicant.remarks || ""}
+                  rows={5}
+                  className="ea-textarea"
+                />
+              </div>
+            </div>
+
+            {/* Footer inside last card */}
+            <div className="ea-footer">
+              <Link href={`/applicants/${id}`} className="ea-btn-cancel">
+                Cancel
+              </Link>
+              <button type="submit" className="ea-btn-submit">
+                Save Changes
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </main>
+    </>
   );
 }
 
-function Input({
+/* ── Plain text input ── */
+function Field({
   label,
   name,
   defaultValue,
@@ -296,54 +442,20 @@ function Input({
   defaultValue?: any;
 }) {
   return (
-    <div>
-      <label className="mb-2 block">{label}</label>
-
+    <div className="ea-field">
+      <label className="ea-label" htmlFor={name}>{label}</label>
       <input
+        id={name}
         name={name}
         defaultValue={defaultValue ?? ""}
-        className="w-full rounded-lg border p-3"
+        className="ea-input"
       />
     </div>
   );
 }
 
-function SelectInput({
-  label,
-  name,
-  defaultValue,
-  options,
-}: {
-  label: string;
-  name: string;
-  defaultValue?: string;
-  options: string[];
-}) {
-  return (
-    <div>
-      <label className="mb-2 block">{label}</label>
-
-      <select
-        name={name}
-        defaultValue={defaultValue || ""}
-        className="w-full rounded-lg border p-3"
-      >
-        <option value="">-- Select --</option>
-
-        {options.map((option) => (
-          <option
-            key={option}
-            value={option}
-          >
-            {option}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function StatusSelect({
+/* ── Pending / Completed select ── */
+function StatusField({
   label,
   name,
   defaultValue,
@@ -353,15 +465,15 @@ function StatusSelect({
   defaultValue?: string;
 }) {
   return (
-    <div>
-      <label className="mb-2 block">{label}</label>
-
+    <div className="ea-field">
+      <label className="ea-label" htmlFor={name}>{label}</label>
       <select
+        id={name}
         name={name}
         defaultValue={defaultValue || ""}
-        className="w-full rounded-lg border p-3"
+        className="ea-select"
       >
-        <option value="">-- Select --</option>
+        <option value="">— Select —</option>
         <option value="Pending">Pending</option>
         <option value="Completed">Completed</option>
       </select>

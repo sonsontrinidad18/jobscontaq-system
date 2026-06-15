@@ -36,238 +36,523 @@ export default async function ApplicantsPage({
     .order("worker_name");
 
   const filteredApplicants = statusFilter
-    ? applicants?.filter(
-        (a) => a.deployment_status === statusFilter
-      )
+    ? applicants?.filter((a) => a.deployment_status === statusFilter)
     : applicants;
 
   return (
-    <main className="p-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-green-700">
-            Applicants
-          </h1>
+    <>
+      {/* Google Fonts */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
-          <p className="mt-2 text-gray-600">
-            Manage all applicant records and deployment progress
-          </p>
+        .page-root {
+          font-family: 'Inter', sans-serif;
+          background-color: #F7F5F0;
+          min-height: 100vh;
+          color: #1a1a2e;
+        }
+
+        /* ── Page Header ── */
+        .page-header {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          margin-bottom: 2.5rem;
+        }
+
+        .page-title {
+          font-family: 'Playfair Display', serif;
+          font-size: 2.5rem;
+          font-weight: 700;
+          color: #0F1C2E;
+          letter-spacing: -0.5px;
+          line-height: 1.1;
+          margin: 0 0 0.35rem 0;
+        }
+
+        .page-subtitle {
+          font-size: 0.875rem;
+          color: #64748B;
+          font-weight: 400;
+          letter-spacing: 0.01em;
+          margin: 0;
+        }
+
+        /* ── New Applicant Button ── */
+        .btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background-color: #0F1C2E;
+          color: #C9A84C;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.8125rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 0.75rem 1.5rem;
+          border-radius: 4px;
+          text-decoration: none;
+          transition: background-color 0.2s, color 0.2s;
+          white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+          background-color: #C9A84C;
+          color: #0F1C2E;
+        }
+
+        /* ── Search ── */
+        .search-wrapper {
+          position: relative;
+          margin-bottom: 1.5rem;
+        }
+
+        .search-icon {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          font-size: 1rem;
+          pointer-events: none;
+        }
+
+        .search-input {
+          width: 100%;
+          background: #ffffff;
+          border: 1px solid #e2e0db;
+          border-radius: 4px;
+          padding: 0.8rem 1rem 0.8rem 2.75rem;
+          font-family: 'Inter', sans-serif;
+          font-size: 0.875rem;
+          color: #0F1C2E;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          box-sizing: border-box;
+        }
+
+        .search-input::placeholder {
+          color: #94a3b8;
+        }
+
+        .search-input:focus {
+          border-color: #C9A84C;
+          box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+        }
+
+        /* ── Filter Pills ── */
+        .filters {
+          display: flex;
+          gap: 0.5rem;
+          margin-bottom: 2.5rem;
+          flex-wrap: wrap;
+        }
+
+        .filter-pill {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.75rem;
+          font-weight: 500;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          padding: 0.45rem 1.1rem;
+          border-radius: 2px;
+          text-decoration: none;
+          border: 1px solid transparent;
+          transition: all 0.18s;
+        }
+
+        .filter-all {
+          background: #0F1C2E;
+          color: #C9A84C;
+          border-color: #0F1C2E;
+        }
+
+        .filter-all:hover {
+          background: #C9A84C;
+          color: #0F1C2E;
+          border-color: #C9A84C;
+        }
+
+        .filter-processing {
+          background: transparent;
+          color: #B45309;
+          border-color: #D97706;
+        }
+
+        .filter-processing:hover {
+          background: #FEF3C7;
+        }
+
+        .filter-deployment {
+          background: transparent;
+          color: #1D4ED8;
+          border-color: #3B82F6;
+        }
+
+        .filter-deployment:hover {
+          background: #EFF6FF;
+        }
+
+        .filter-deployed {
+          background: transparent;
+          color: #166534;
+          border-color: #22C55E;
+        }
+
+        .filter-deployed:hover {
+          background: #F0FDF4;
+        }
+
+        /* ── Stat Cards ── */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1.25rem;
+          margin-bottom: 2.5rem;
+        }
+
+        @media (max-width: 900px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+          .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        .stat-card {
+          background: #ffffff;
+          border-radius: 4px;
+          padding: 1.5rem 1.5rem 1.5rem 1.25rem;
+          border-left: 3px solid #C9A84C;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .stat-card::after {
+          content: '';
+          position: absolute;
+          top: 0; right: 0;
+          width: 60px; height: 60px;
+          background: linear-gradient(135deg, transparent 50%, rgba(201,168,76,0.06) 50%);
+        }
+
+        .stat-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #94A3B8;
+          margin: 0 0 0.5rem 0;
+        }
+
+        .stat-number {
+          font-family: 'Playfair Display', serif;
+          font-size: 2.25rem;
+          font-weight: 700;
+          line-height: 1;
+          margin: 0;
+        }
+
+        .stat-number.gold   { color: #0F1C2E; }
+        .stat-number.amber  { color: #D97706; }
+        .stat-number.blue   { color: #2563EB; }
+        .stat-number.green  { color: #16A34A; }
+
+        /* ── Table ── */
+        .table-wrapper {
+          background: #ffffff;
+          border-radius: 4px;
+          overflow-x: auto;
+          border: 1px solid #e8e5df;
+        }
+
+        .data-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.8125rem;
+        }
+
+        .data-table thead tr {
+          background-color: #0F1C2E;
+        }
+
+        .data-table thead th {
+          padding: 1rem 1.1rem;
+          text-align: left;
+          font-size: 0.65rem;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #C9A84C;
+          white-space: nowrap;
+        }
+
+        .data-table tbody tr {
+          border-bottom: 1px solid #F1EFE9;
+          transition: background-color 0.15s;
+        }
+
+        .data-table tbody tr:last-child {
+          border-bottom: none;
+        }
+
+        .data-table tbody tr:hover {
+          background-color: #FDFAF3;
+        }
+
+        .data-table td {
+          padding: 0.9rem 1.1rem;
+          color: #334155;
+          white-space: nowrap;
+        }
+
+        .worker-link {
+          font-weight: 600;
+          color: #0F1C2E;
+          text-decoration: none;
+          letter-spacing: 0.01em;
+        }
+
+        .worker-link:hover {
+          color: #C9A84C;
+        }
+
+        /* ── Status Badges ── */
+        .badge {
+          display: inline-block;
+          padding: 0.25rem 0.65rem;
+          border-radius: 2px;
+          font-size: 0.65rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+
+        .badge-deployed    { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+        .badge-deployment  { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+        .badge-processing  { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+
+        /* ── Action Buttons ── */
+        .actions-cell {
+          display: flex;
+          gap: 0.4rem;
+          align-items: center;
+        }
+
+        .btn-edit {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          padding: 0.3rem 0.75rem;
+          border-radius: 2px;
+          text-decoration: none;
+          background: transparent;
+          color: #0F1C2E;
+          border: 1px solid #0F1C2E;
+          transition: all 0.15s;
+          cursor: pointer;
+        }
+
+        .btn-edit:hover {
+          background: #0F1C2E;
+          color: #C9A84C;
+        }
+
+        .btn-delete {
+          font-family: 'Inter', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          padding: 0.3rem 0.75rem;
+          border-radius: 2px;
+          background: transparent;
+          color: #DC2626;
+          border: 1px solid #FCA5A5;
+          transition: all 0.15s;
+          cursor: pointer;
+        }
+
+        .btn-delete:hover {
+          background: #FEF2F2;
+          border-color: #DC2626;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+          text-align: center;
+          padding: 4rem 2rem;
+          color: #94A3B8;
+        }
+
+        .empty-state p {
+          font-family: 'Playfair Display', serif;
+          font-size: 1.125rem;
+          margin: 0 0 0.5rem;
+          color: #64748B;
+        }
+
+        .empty-state span {
+          font-size: 0.8125rem;
+        }
+
+        /* ── Divider line under header ── */
+        .gold-rule {
+          width: 2.5rem;
+          height: 2px;
+          background: #C9A84C;
+          margin: 0.6rem 0 0 0;
+          border: none;
+        }
+      `}</style>
+
+      <main className="page-root" style={{ padding: "2.5rem 2.5rem 4rem" }}>
+
+        {/* Header */}
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Applicants</h1>
+            <hr className="gold-rule" />
+            <p className="page-subtitle" style={{ marginTop: "0.6rem" }}>
+              Manage all applicant records and deployment progress
+            </p>
+          </div>
+
+          <Link href="/applicants/new" className="btn-primary">
+            + New Applicant
+          </Link>
         </div>
 
-        <Link
-          href="/applicants/new"
-          className="rounded-lg bg-green-600 px-5 py-3 font-medium text-white hover:bg-green-700"
-        >
-          + New Applicant
-        </Link>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search applicant name..."
-          className="w-full rounded-lg border p-3"
-        />
-      </div>
-
-      {/* Filters */}
-      <div className="mb-8 flex gap-3">
-        <Link
-          href="/applicants"
-          className="rounded-lg bg-gray-200 px-4 py-2"
-        >
-          All
-        </Link>
-
-        <Link
-          href="/applicants?status=Processing"
-          className="rounded-lg bg-yellow-100 px-4 py-2 text-yellow-700"
-        >
-          Processing
-        </Link>
-
-        <Link
-          href="/applicants?status=For Deployment"
-          className="rounded-lg bg-blue-100 px-4 py-2 text-blue-700"
-        >
-          For Deployment
-        </Link>
-
-        <Link
-          href="/applicants?status=Deployed"
-          className="rounded-lg bg-green-100 px-4 py-2 text-green-700"
-        >
-          Deployed
-        </Link>
-      </div>
-
-      {/* Stats */}
-      <div className="mb-8 grid gap-6 md:grid-cols-4">
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-gray-500">
-            Total Applicants
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-green-700">
-            {applicants?.length || 0}
-          </h2>
+        {/* Search */}
+        <div className="search-wrapper">
+          <span className="search-icon">⌕</span>
+          <input
+            type="text"
+            placeholder="Search applicant name..."
+            className="search-input"
+          />
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-gray-500">
-            Processing
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-yellow-600">
-            {
-              applicants?.filter(
-                (a) => a.deployment_status === "Processing"
-              ).length || 0
-            }
-          </h2>
+        {/* Filters */}
+        <div className="filters">
+          <Link href="/applicants" className="filter-pill filter-all">All</Link>
+          <Link href="/applicants?status=Processing" className="filter-pill filter-processing">Processing</Link>
+          <Link href="/applicants?status=For Deployment" className="filter-pill filter-deployment">For Deployment</Link>
+          <Link href="/applicants?status=Deployed" className="filter-pill filter-deployed">Deployed</Link>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-gray-500">
-            For Deployment
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-blue-600">
-            {
-              applicants?.filter(
-                (a) =>
-                  a.deployment_status ===
-                  "For Deployment"
-              ).length || 0
-            }
-          </h2>
+        {/* Stats */}
+        <div className="stats-grid">
+          <div className="stat-card">
+            <p className="stat-label">Total Applicants</p>
+            <p className="stat-number gold">{applicants?.length || 0}</p>
+          </div>
+          <div className="stat-card">
+            <p className="stat-label">Processing</p>
+            <p className="stat-number amber">
+              {applicants?.filter((a) => a.deployment_status === "Processing").length || 0}
+            </p>
+          </div>
+          <div className="stat-card">
+            <p className="stat-label">For Deployment</p>
+            <p className="stat-number blue">
+              {applicants?.filter((a) => a.deployment_status === "For Deployment").length || 0}
+            </p>
+          </div>
+          <div className="stat-card">
+            <p className="stat-label">Deployed</p>
+            <p className="stat-number green">
+              {applicants?.filter((a) => a.deployment_status === "Deployed").length || 0}
+            </p>
+          </div>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-gray-500">
-            Deployed
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold text-green-600">
-            {
-              applicants?.filter(
-                (a) => a.deployment_status === "Deployed"
-              ).length || 0
-            }
-          </h2>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl bg-white shadow">
-        <table className="w-full">
-          <thead className="bg-green-600 text-white">
-            <tr>
-              <th className="p-4 text-left">Worker Name</th>
-              <th className="p-4 text-left">Position</th>
-              <th className="p-4 text-left">Country</th>
-              <th className="p-4 text-left">Employer</th>
-              <th className="p-4 text-left">FRA</th>
-              <th className="p-4 text-left">Passport No.</th>
-              <th className="p-4 text-left">Contact No.</th>
-              <th className="p-4 text-left">Province</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filteredApplicants?.map((applicant) => (
-              <tr
-                key={applicant.id}
-                className="border-b hover:bg-gray-50"
-              >
-                <td className="p-4">
-                  <Link
-                    href={`/applicants/${applicant.id}`}
-                    className="font-medium text-green-700 hover:underline"
-                  >
-                    {applicant.worker_name}
-                  </Link>
-                </td>
-
-                <td className="p-4">
-                  {applicant.position}
-                </td>
-
-                <td className="p-4">
-                  {applicant.country}
-                </td>
-
-                <td className="p-4">
-                  {applicant.employer}
-                </td>
-
-                <td className="p-4">
-                  {applicant.fra}
-                </td>
-
-                <td className="p-4">
-                  {applicant.passport_number}
-                </td>
-
-                <td className="p-4">
-                  {applicant.contact_number}
-                </td>
-
-                <td className="p-4">
-                  {applicant.province}
-                </td>
-
-                <td className="p-4">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      applicant.deployment_status ===
-                      "Deployed"
-                        ? "bg-green-100 text-green-700"
-                        : applicant.deployment_status ===
-                          "For Deployment"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {applicant.deployment_status ||
-                      "Processing"}
-                  </span>
-                </td>
-
-                <td className="p-4">
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/applicants/${applicant.id}/edit`}
-                      className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-                      >
-                        Edit
-                      </Link>
-
-                      <form action={deleteApplicant}>
-                       <input
-                          type="hidden"
-                          name="id"
-                          value={applicant.id}
-                        />
-
-                    <button
-                      type="submit"
-                      className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
-                  </form>
-                  </div>
-                </td>
+        {/* Table */}
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Worker Name</th>
+                <th>Position</th>
+                <th>Country</th>
+                <th>Employer</th>
+                <th>FRA</th>
+                <th>Passport No.</th>
+                <th>Contact No.</th>
+                <th>Province</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </main>
+            </thead>
+
+            <tbody>
+              {filteredApplicants && filteredApplicants.length > 0 ? (
+                filteredApplicants.map((applicant) => (
+                  <tr key={applicant.id}>
+                    <td>
+                      <Link
+                        href={`/applicants/${applicant.id}`}
+                        className="worker-link"
+                      >
+                        {applicant.worker_name}
+                      </Link>
+                    </td>
+                    <td>{applicant.position}</td>
+                    <td>{applicant.country}</td>
+                    <td>{applicant.employer}</td>
+                    <td>{applicant.fra}</td>
+                    <td>{applicant.passport_number}</td>
+                    <td>{applicant.contact_number}</td>
+                    <td>{applicant.province}</td>
+                    <td>
+                      <span
+                        className={`badge ${
+                          applicant.deployment_status === "Deployed"
+                            ? "badge-deployed"
+                            : applicant.deployment_status === "For Deployment"
+                            ? "badge-deployment"
+                            : "badge-processing"
+                        }`}
+                      >
+                        {applicant.deployment_status || "Processing"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="actions-cell">
+                        <Link
+                          href={`/applicants/${applicant.id}/edit`}
+                          className="btn-edit"
+                        >
+                          Edit
+                        </Link>
+                        <form action={deleteApplicant} style={{ margin: 0 }}>
+                          <input type="hidden" name="id" value={applicant.id} />
+                          <button type="submit" className="btn-delete">
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={10}>
+                    <div className="empty-state">
+                      <p>No applicants found</p>
+                      <span>Try adjusting your filter or add a new applicant.</span>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+      </main>
+    </>
   );
 }
