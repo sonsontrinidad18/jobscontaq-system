@@ -33,6 +33,8 @@ export default async function TrackerPage({
   async function saveTracker(formData: FormData) {
     "use server";
 
+    console.log("SAVE TRACKER CLICKED");
+
     for (const stage of STAGES) {
       const date     = formData.get(`${stage}_date`) as string;
       const location = formData.get(`${stage}_location`) as string;

@@ -45,6 +45,10 @@ export default function NewApplicant() {
         contact_number: formData.get("contact_number"),
         province: formData.get("province"),
 
+        contract_start: formData.get("contract_start"),
+        contract_end: formData.get("contract_end"),
+        renewal_date: formData.get("renewal_date"),
+
         status: "Processing",
         deployment_status: "Processing",
 
@@ -375,6 +379,33 @@ export default function NewApplicant() {
                   name="country"
                   required
                   placeholder="e.g. KSA"
+                  className="na-input"
+                />
+              </div>
+
+              <div className="na-field">
+                <label className="na-label">Contract Start</label>
+                <input
+                  type="date"
+                  name="contract_start"
+                  className="na-input"
+                />
+              </div>
+
+              <div className="na-field">
+                <label className="na-label">Contract End</label>
+                <input
+                  type="date"
+                  name="contract_end"
+                  className="na-input"
+                />
+              </div>
+
+              <div className="na-field">
+                <label className="na-label">Renewal Date</label>
+                <input
+                  type="date"
+                  name="renewal_date"
                   className="na-input"
                 />
               </div>

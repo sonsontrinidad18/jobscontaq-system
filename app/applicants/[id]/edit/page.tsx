@@ -40,6 +40,10 @@ export default async function EditApplicant({
       contact_number: formData.get("contact_number"),
       province: formData.get("province"),
 
+      contract_start: formData.get("contract_start") || null,
+      contract_end: formData.get("contract_end") || null,
+      renewal_date: formData.get("renewal_date") || null,
+
       dmw_registration: formData.get("dmw_registration"),
       info_sheet: formData.get("info_sheet"),
       cv_status: formData.get("cv_status"),
@@ -344,6 +348,25 @@ export default async function EditApplicant({
                 <label className="ea-label" htmlFor="position">Position</label>
                 <input id="position" name="position" type="text" defaultValue={applicant.position || ""} className="ea-input"
                 />
+
+              <div className="ea-field">
+                <label className="ea-label">Contract Start</label>
+                <input type="date" name="contract_start" defaultValue={applicant.contract_start || ""} className="ea-input"
+                />
+              </div>
+
+              <div className="ea-field">
+                <label className="ea-label">Contract End</label>
+                <input type="date" name="contract_end" defaultValue={applicant.contract_end || ""} className="ea-input"
+                />
+              </div>
+
+              <div className="ea-field">
+                <label className="ea-label">Renewal Date</label>
+                <input type="date" name="renewal_date" defaultValue={applicant.renewal_date || ""} className="ea-input"
+                />
+              </div>
+
               </div>
 
               <Field label="Country"         name="country"          defaultValue={applicant.country} />

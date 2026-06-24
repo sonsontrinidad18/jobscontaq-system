@@ -41,6 +41,36 @@ export default async function ApplicantProfile({
 
   const deploymentStatus = applicant.deployment_status || "Processing";
 
+  const today = new Date();
+
+  const contractStart = applicant.contract_start
+    ? new Date(applicant.contract_start)
+    : null;
+
+  const contractEnd = applicant.contract_end
+    ? new Date(applicant.contract_end)
+    : null;
+
+  const daysRemaining =
+    contractEnd
+      ? Math.ceil(
+          (contractEnd.getTime() - today.getTime()) /
+          (1000 * 60 * 60 * 24)
+        )
+      : null;
+
+  let contractStatus = "No Contract";
+
+  if (daysRemaining !== null) {
+    if (daysRemaining < 0) {
+      contractStatus = "Expired";
+    } else if (daysRemaining <= 90) {
+      contractStatus = "Expiring Soon";
+    } else {
+      contractStatus = "Active";
+    }
+  }
+
   // Map records to stages
   const stages = ["Contract Start", "Contract End", "Renewal"];
   const stageMap: Record<string, { date?: string; location?: string }> = {};
@@ -567,19 +597,49 @@ export default async function ApplicantProfile({
           </div>
         </div>
 
-        {/* ════════════════════════════
-            DEPLOYMENT LIFECYCLE TRACKER
-        ════════════════════════════ */}
+        {/* Contract Monitoring */}
         <div className="pr-section">
           <div className="pr-section-header">
-            <div className="pr-section-icon">◉</div>
-            <div style={{ flex: 1 }}>
-              <h2 className="pr-section-title">Deployment Tracker</h2>
-            </div>
+            <div className="pr-section-icon">📅</div>
+            <h2 className="pr-section-title">Contract Monitoring</h2>
+          </div>
+
+          <div className="pr-grid-2">
+            <Field
+              label="Contract Start"
+              value={applicant.contract_start || "-"}
+            />
+
+            <Field
+              label="Contract End"
+              value={applicant.contract_end || "-"}
+            />
+
+            <Field
+              label="Renewal Date"
+              value={applicant.renewal_date || "-"}
+            />
+
+            <Field
+              label="Days Remaining"
+              value={
+                daysRemaining !== null
+                  ? `${daysRemaining} Days`
+                  : "-"
+              }
+            />
+
+            <Field
+              label="Contract Status"
+              value={contractStatus}
+            />
+          </div>
+
+          <div style={{ marginTop: "1rem" }}>
             <Link
-              href={`/applicants/${applicant.id}/tracker`}
+              href={`/applicants/${applicant.id}/edit`}
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "Inter, sans-serif",
                 fontSize: "0.6875rem",
                 fontWeight: 600,
                 letterSpacing: "0.08em",
@@ -589,77 +649,11 @@ export default async function ApplicantProfile({
                 textDecoration: "none",
                 background: "#0F1C2E",
                 color: "#C9A84C",
-                border: "1px solid #0F1C2E",
-                transition: "all 0.15s",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
               }}
             >
-              Update Tracker
+              Update Contract
             </Link>
           </div>
-
-          {/* Overall progress bar */}
-          <div className="tracker-progress-row">
-            <span className="tracker-progress-label">
-              {completedCount} of {stages.length} stages completed
-            </span>
-            <span className="tracker-progress-pct">{progressPct}%</span>
-          </div>
-          <div className="tracker-bar-track">
-            <div className="tracker-bar-fill" style={{ width: `${progressPct}%` }} />
-          </div>
-
-          {/* Stage nodes */}
-          {deploymentStatus === "Deployed" || completedCount > 0 ? (
-            <div className="tracker-timeline">
-              {stages.map((stage, idx) => {
-                const record = stageMap[stage];
-                const isDone = !!record?.date;
-                const isNext = !isDone && stages.slice(0, idx).every((s) => stageMap[s]?.date);
-
-                return (
-                  <div className="tracker-stage" key={stage}>
-                    {/* Node */}
-                    <div className={`tracker-node ${
-                      isDone ? "tracker-node-done"
-                      : isNext ? "tracker-node-active"
-                      : "tracker-node-pending"
-                    }`}>
-                      {isDone ? "✓" : idx + 1}
-                    </div>
-
-                    {/* Stage label */}
-                    <p className={`tracker-stage-label ${!isDone ? "pending-label" : ""}`}>
-                      {stage}
-                    </p>
-
-                    {/* Info card */}
-                    <div className={`tracker-stage-card ${
-                      isDone ? "done-card" : "pending-card"
-                    }`}>
-                      <p className="tracker-field-label">Date</p>
-                      {record?.date
-                        ? <p className="tracker-field-value">{record.date}</p>
-                        : <p className="tracker-field-empty">Not recorded</p>
-                      }
-                      <p className="tracker-field-label">Location</p>
-                      {record?.location
-                        ? <p className="tracker-field-value">{record.location}</p>
-                        : <p className="tracker-field-empty">Not recorded</p>
-                      }
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="tracker-empty-notice">
-              <strong>No tracker data yet</strong>
-              This tracker activates once the applicant is marked as Deployed.
-              Click <em>Update Tracker</em> to begin recording lifecycle stages.
-            </div>
-          )}
         </div>
 
       </main>
