@@ -6,9 +6,36 @@ export default function NewApplicant() {
   async function createApplicant(formData: FormData) {
     "use server";
 
+  const country = String(formData.get("country") || "")
+    .trim()
+    .toUpperCase();
+
+      // Get latest SR Code for the selected country
+  const { data: latestApplicant } = await supabase
+    .from("applicants")
+    .select("sr_code")
+    .eq("country", country)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+      
+  let nextNumber = 1;
+
+  if (latestApplicant?.sr_code) {
+    const match = latestApplicant.sr_code.match(/(\d+)$/);
+
+    if (match) {
+      nextNumber = parseInt(match[1], 10) + 1;
+    }
+  }
+
+  const srCode = `${country}-${String(nextNumber).padStart(4, "0")}`;
+
     const { error } = await supabase
       .from("applicants")
       .insert({
+        sr_code: formData.get("sr_code"),
+
         worker_name: formData.get("worker_name"),
         position: formData.get("position"),
         country: formData.get("country"),
@@ -30,6 +57,7 @@ export default function NewApplicant() {
         visa: "Pending",
         contract_verified: "Pending",
         oec: "Pending",
+        flight: "Pending",
 
         progress_percentage: 0,
         days_processing: 0,
@@ -299,6 +327,22 @@ export default function NewApplicant() {
 
             <div className="na-grid-2">
 
+              <div className="field">
+                <label htmlFor="sr_code">
+                  SR Code <span>*</span>
+                </label>
+
+                <input
+                  id="sr_code"
+                  name="sr_code"
+                  type="text"
+                  required
+                  placeholder="e.g. MAIN-001"
+                  className="na-input"
+                />
+          
+              </div>
+
               <div className="na-field">
                 <label className="na-label" htmlFor="worker_name">
                   Worker Name <span>*</span>
@@ -317,13 +361,8 @@ export default function NewApplicant() {
                 <label className="na-label" htmlFor="position">
                   Position <span>*</span>
                 </label>
-                <select id="position" name="position" required className="na-select">
-                  <option value="">— Select Position —</option>
-                  <option value="HSW">HSW</option>
-                  <option value="Caregiver">Caregiver</option>
-                  <option value="Driver">Driver</option>
-                  <option value="Cleaner">Cleaner</option>
-                </select>
+                <input id="position" name="position" type="text" required placeholder="e.g HSW" className="na-input"
+                />
               </div>
 
               <div className="na-field">

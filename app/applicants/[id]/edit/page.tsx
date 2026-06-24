@@ -30,6 +30,7 @@ export default async function EditApplicant({
     "use server";
 
     const applicantData = {
+      sr_code: formData.get("sr_code"),
       worker_name: formData.get("worker_name"),
       position: formData.get("position"),
       country: formData.get("country"),
@@ -334,17 +335,15 @@ export default async function EditApplicant({
             </div>
 
             <div className="ea-grid-2">
+            
               <Field label="Worker Name" name="worker_name" defaultValue={applicant.worker_name} />
+
+              <Field label="SR Code" name="sr_code" defaultValue={applicant.sr_code}/>
 
               <div className="ea-field">
                 <label className="ea-label" htmlFor="position">Position</label>
-                <select id="position" name="position" defaultValue={applicant.position || ""} className="ea-select">
-                  <option value="">— Select —</option>
-                  <option value="HSW">HSW</option>
-                  <option value="Caregiver">Caregiver</option>
-                  <option value="Driver">Driver</option>
-                  <option value="Cleaner">Cleaner</option>
-                </select>
+                <input id="position" name="position" type="text" defaultValue={applicant.position || ""} className="ea-input"
+                />
               </div>
 
               <Field label="Country"         name="country"          defaultValue={applicant.country} />

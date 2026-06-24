@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
+import MobileNav from "@/components/MobileNav";
+
+export const metadata: Metadata = {
+  title: "JobsContaq — Applicant Management System",
+  description:
+    "Applicant & Worker Management System by JobsContaq Manpower Corp",
+};
 
 export default function RootLayout({
   children,
@@ -9,16 +17,34 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-100">
-        <div className="flex min-h-screen">
-          {/* Sidebar */}
-          <Sidebar />
+      <body
+        style={{
+          margin: 0,
+          padding: 0,
+          background: "#F7F5F0",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            minHeight: "100vh",
+          }}
+        >
+          <MobileNav>
+            <Sidebar />
+          </MobileNav>
 
-          {/* Main Content */}
-          <div className="flex flex-1 flex-col">
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minWidth: 0,
+            }}
+          >
             <Header />
 
-            <main className="flex-1 p-6">
+            <main style={{ flex: 1 }}>
               {children}
             </main>
           </div>

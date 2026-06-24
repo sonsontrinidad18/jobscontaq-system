@@ -498,6 +498,7 @@ export default async function ApplicantProfile({
           </div>
           <div className="pr-grid-2">
             <Field label="Worker Name"     value={applicant.worker_name} />
+            <Field label="SR Code"     value={applicant.sr_code} />
             <Field label="Position"        value={applicant.position} />
             <Field label="Country"         value={applicant.country} />
             <Field label="Employer"        value={applicant.employer} />
@@ -573,7 +574,7 @@ export default async function ApplicantProfile({
           <div className="pr-section-header">
             <div className="pr-section-icon">◉</div>
             <div style={{ flex: 1 }}>
-              <h2 className="pr-section-title">Deployment Lifecycle Tracker</h2>
+              <h2 className="pr-section-title">Deployment Tracker</h2>
             </div>
             <Link
               href={`/applicants/${applicant.id}/tracker`}

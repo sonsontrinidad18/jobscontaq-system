@@ -7,10 +7,12 @@ export default async function ApplicantsPage({
 }: {
   searchParams?: Promise<{
     status?: string;
+    search?: string;
   }>;
 }) {
   const params = await searchParams;
   const statusFilter = params?.status;
+  const searchTerm = params?.search?.toLowerCase() || "";
 
   async function deleteApplicant(formData: FormData) {
     "use server";
@@ -35,9 +37,20 @@ export default async function ApplicantsPage({
     .select("*")
     .order("worker_name");
 
-  const filteredApplicants = statusFilter
-    ? applicants?.filter((a) => a.deployment_status === statusFilter)
-    : applicants;
+  const filteredApplicants = applicants?.filter((applicant) => {
+  const matchesStatus =
+    !statusFilter ||
+    applicant.deployment_status === statusFilter;
+
+  const matchesSearch =
+    !searchTerm ||
+    applicant.worker_name?.toLowerCase().includes(searchTerm) ||
+    applicant.sr_code?.toLowerCase().includes(searchTerm) ||
+    applicant.passport_number?.toLowerCase().includes(searchTerm) ||
+    applicant.employer?.toLowerCase().includes(searchTerm);
+
+  return matchesStatus && matchesSearch;
+  });
 
   return (
     <>
@@ -427,15 +440,18 @@ export default async function ApplicantsPage({
         </div>
 
         {/* Search */}
-        <div className="search-wrapper">
+        <form method="GET" className="search-wrapper">
           <span className="search-icon">⌕</span>
+
           <input
             type="text"
-            placeholder="Search applicant name..."
+            name="search"
+            placeholder="Search SR Code, Name, Passport..."
+            defaultValue={params?.search || ""}
             className="search-input"
           />
-        </div>
-
+        </form>
+        
         {/* Filters */}
         <div className="filters">
           <Link href="/applicants" className="filter-pill filter-all">All</Link>
@@ -475,16 +491,15 @@ export default async function ApplicantsPage({
           <table className="data-table">
             <thead>
               <tr>
+                <th>SR Code</th>
                 <th>Worker Name</th>
                 <th>Position</th>
                 <th>Country</th>
                 <th>Employer</th>
                 <th>FRA</th>
                 <th>Passport No.</th>
-                <th>Contact No.</th>
-                <th>Province</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Delete</th>
               </tr>
             </thead>
 
@@ -492,6 +507,10 @@ export default async function ApplicantsPage({
               {filteredApplicants && filteredApplicants.length > 0 ? (
                 filteredApplicants.map((applicant) => (
                   <tr key={applicant.id}>
+                    <td style={{ fontWeight: 700, color: "#2563EB" }}>
+                      {applicant.sr_code ?? "_"}
+                    </td>
+
                     <td>
                       <Link
                         href={`/applicants/${applicant.id}`}
@@ -505,8 +524,6 @@ export default async function ApplicantsPage({
                     <td>{applicant.employer}</td>
                     <td>{applicant.fra}</td>
                     <td>{applicant.passport_number}</td>
-                    <td>{applicant.contact_number}</td>
-                    <td>{applicant.province}</td>
                     <td>
                       <span
                         className={`badge ${
@@ -520,21 +537,25 @@ export default async function ApplicantsPage({
                         {applicant.deployment_status || "Processing"}
                       </span>
                     </td>
-                    <td>
-                      <div className="actions-cell">
-                        <Link
-                          href={`/applicants/${applicant.id}/edit`}
-                          className="btn-edit"
+                    <td style={{ textAlign: "center" }}>
+                      <form action={deleteApplicant} style={{ margin: 0 }}>
+                        <input type="hidden" name="id" value={applicant.id} />
+
+                        <button
+                          type="submit"
+                          title="Delete Applicant"
+                          style={{
+                            border: "none",
+                            background: "transparent",
+                            color: "#DC2626",
+                            fontSize: "20px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                          }}
                         >
-                          Edit
-                        </Link>
-                        <form action={deleteApplicant} style={{ margin: 0 }}>
-                          <input type="hidden" name="id" value={applicant.id} />
-                          <button type="submit" className="btn-delete">
-                            Delete
-                          </button>
-                        </form>
-                      </div>
+                          ✕
+                        </button>
+                      </form>
                     </td>
                   </tr>
                 ))
