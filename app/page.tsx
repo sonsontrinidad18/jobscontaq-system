@@ -18,7 +18,7 @@ export default async function DashboardPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
         .db-root { font-family:'Inter',sans-serif; background:#F7F5F0; min-height:100vh; padding:2.5rem 2.5rem 5rem; color:#0F1C2E; }
-        .db-title { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:#0F1C2E; letter-spacing:-0.3px; margin:0 0 0.2rem; }
+        .db-title { font-family:'Playfair Display',serif; font-size:2.5rem; font-weight:700; color:#0F1C2E; letter-spacing:-0.3px; margin:0 0 0.2rem; }
         .db-gold-rule { width:2rem;height:2px;background:#C9A84C;border:none;margin:0 0 0.4rem; }
         .db-subtitle { font-size:0.8125rem;color:#64748B;margin:0 0 2rem; }
         .db-stats { display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem; }
