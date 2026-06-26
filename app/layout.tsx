@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
-import MobileNav from "@/components/MobileNav";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export const metadata: Metadata = {
   title: "JobsContaq — Applicant Management System",
@@ -24,31 +22,9 @@ export default function RootLayout({
           background: "#F7F5F0",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            minHeight: "100vh",
-          }}
-        >
-          <MobileNav>
-            <Sidebar />
-          </MobileNav>
-
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              minWidth: 0,
-            }}
-          >
-            <Header />
-
-            <main style={{ flex: 1 }}>
-              {children}
-            </main>
-          </div>
-        </div>
+        <LayoutWrapper>
+          {children}
+        </LayoutWrapper>
       </body>
     </html>
   );
